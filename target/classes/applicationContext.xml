@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="
+	http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans-4.2.xsd
+	http://www.springframework.org/schema/mvc
+	http://www.springframework.org/schema/mvc/spring-mvc-4.2.xsd
+	http://www.springframework.org/schema/aop
+	http://www.springframework.org/schema/aop/spring-aop-4.2.xsd
+	http://www.springframework.org/schema/tx
+	http://www.springframework.org/schema/tx/spring-tx-4.2.xsd
+	http://www.springframework.org/schema/context
+    http://www.springframework.org/schema/context/spring-context-4.2.xsd">
+    
+    <!-- Spring的配置文件，这里主要配置和业务逻辑有关的 -->
+    <!-- 数据源，事务控制 -->
+    
+    <!-- 加载配置文件 -->
+	<context:property-placeholder location="classpath:dbconfig.properties" />
+	<!-- MYSQL配置 -->
+    <bean id="ComboPooledDataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+    	<property name="jdbcUrl" value="${jdbc.url}" />
+    	<property name="driverClass" value="${jdbc.driver}"/>
+		<property name="username" value="${jdbc.username}" />
+		<property name="password" value="${jdbc.password}" />
+    </bean>
+    
+    <!-- MYBATIS配置以及整合 -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<!-- mybatis配置文件 -->
+		<property name="configLocation" value="classpath:SqlMapConfig.xml"/>
+		<!-- 数据源 -->
+		<property name="dataSource" ref="pooledDataSource"/>
+		<!-- 指定mybatis.mapper的位置 -->
+		<property name="mapperLocations" value="classpath:mapper/*.xml"></property>
+	</bean>
+	
+	<!-- 配置扫描器，将mybatis接口的实现放入到ioc容器 -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<!-- 配置扫描包的路径
+		如果要扫描多个包，中间使用半角逗号分隔
+		要求mapper.xml和mapper.java同名且在同一个目录
+		 -->
+		<property name="basePackage" value="com.sm.dao"/>
+	</bean>
+	
+	<!--使用声明式的控制配置，可以有效的规范代码-->
+	<!--事务管理器的配置-->
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="pooledDataSource"/>
+	</bean>
+	
+	<!--配置aop-->
+	<aop:config>
+		<!-- 切入点表达式 -->
+		<aop:pointcut expression="execution(* com.sm.service..*(..))" id="txpoint"/>
+		<!-- 配置事务增强 -->
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="txpoint"/>
+	</aop:config>
+	
+	<!-- 配置事务增强,事务如何切入 -->
+	<tx:advice id="txAdvice">
+		<tx:attributes>
+			<tx:method name="*"/>
+			<tx:method name="get*" read-only="true"/>
+		</tx:attributes>
+	</tx:advice>
+</beans>
