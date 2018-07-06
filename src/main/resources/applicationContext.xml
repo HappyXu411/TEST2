@@ -17,16 +17,19 @@
 	http://www.springframework.org/schema/context
     http://www.springframework.org/schema/context/spring-context-4.2.xsd">
     
+    
+    <context:component-scan base-package="com.sm">
+    	<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
     <!-- Spring的配置文件，这里主要配置和业务逻辑有关的 -->
     <!-- 数据源，事务控制 -->
-    
     <!-- 加载配置文件 -->
 	<context:property-placeholder location="classpath:dbconfig.properties" />
 	<!-- MYSQL配置 -->
-    <bean id="ComboPooledDataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
-    	<property name="jdbcUrl" value="${jdbc.url}" />
-    	<property name="driverClass" value="${jdbc.driver}"/>
-		<property name="username" value="${jdbc.username}" />
+    <bean id="pooledDataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+    	<property name="jdbcUrl" value="${jdbc.jdbcUrl}" />
+    	<property name="driverClass" value="${jdbc.driverClass}"/>
+		<property name="user" value="${jdbc.user}" />
 		<property name="password" value="${jdbc.password}" />
     </bean>
     
@@ -49,6 +52,13 @@
 		<property name="basePackage" value="com.sm.dao"/>
 	</bean>
 	
+	
+	<!-- 配置可以批量执行的sqlSession -->
+	<bean id = "sqlSession" class="org.mybatis.spring.SqlSessionTemplate">
+		<constructor-arg name="sqlSessionFactory" ref="sqlSessionFactory"></constructor-arg>
+		<constructor-arg name="executorType" value="BATCH"></constructor-arg>
+	</bean>
+	<!-- ==========事务控制的配置============ -->
 	<!--使用声明式的控制配置，可以有效的规范代码-->
 	<!--事务管理器的配置-->
 	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">

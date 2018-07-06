@@ -13,7 +13,7 @@
 	</context-param>
 	
 	<listener>
-		<listener-class>org.springframework.web.context.ContextLoaderListrener</listener-class>
+		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
 	</listener>
 	
 	<!-- springMVC的前端控制器，负责拦截所有请求 -->
