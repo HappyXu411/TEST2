@@ -11,6 +11,13 @@ public class Employee {
 
     private Integer dId;
     
+    //希望员工查询时部门也查询好了
+    private Department department;
+    
+    public Department getDpartment() {
+    	return department;
+    }
+    
     public Employee() {
     	super();
     }
@@ -24,6 +31,7 @@ public class Employee {
     	this.dId = dId;
     }
 
+    
     public Integer getEmpId() {
         return empId;
     }
